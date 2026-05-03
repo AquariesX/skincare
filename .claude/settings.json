@@ -1,0 +1,21 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(mkdir -p 'd:/Fyp Skin Care/backend/ai_model/saved_models')",
+      "Bash(mv 'd:/Fyp Skin Care/backend/ai_model/training/models/efficientnet_model.keras' 'd:/Fyp Skin Care/backend/ai_model/saved_models/skin_model.keras')",
+      "Bash(rmdir 'd:/Fyp Skin Care/backend/ai_model/training/models')",
+      "Bash(mv 'd:/Fyp Skin Care/backend/ai_model/dataset/Acne' 'd:/Fyp Skin Care/backend/ai_model/dataset/acne_tmp')",
+      "Bash(mv 'd:/Fyp Skin Care/backend/ai_model/dataset/acne_tmp' 'd:/Fyp Skin Care/backend/ai_model/dataset/acne')",
+      "Bash(mv 'd:/Fyp Skin Care/backend/ai_model/dataset/dark spots' 'd:/Fyp Skin Care/backend/ai_model/dataset/dark_spots')",
+      "Bash(mv 'd:/Fyp Skin Care/backend/ai_model/dataset/Normal skin' 'd:/Fyp Skin Care/backend/ai_model/dataset/normal_tmp')",
+      "Bash(mv 'd:/Fyp Skin Care/backend/ai_model/dataset/normal_tmp' 'd:/Fyp Skin Care/backend/ai_model/dataset/normal_skin')",
+      "Bash(dir /s \"d:\\\\Fyp Skin Care\")",
+      "PowerShell(Get-ChildItem -Path \"d:\\\\Fyp Skin Care\" -Recurse -Force | Select-Object FullName | Sort-Object FullName | ForEach-Object { $_.FullName.Replace\\(\"d:\\\\Fyp Skin Care\\\\\", \"\"\\) })",
+      "Bash(Get-ChildItem -Path \"d:\\\\Fyp Skin Care\" -Recurse -Directory)",
+      "Bash(Select-Object -First 50)",
+      "Bash(Format-Table FullName)",
+      "Bash(xargs ls *)",
+      "Bash(Select-Object FullName)"
+    ]
+  }
+}

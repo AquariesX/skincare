@@ -1,0 +1,44 @@
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+venv/
+env/
+.venv/
+*.egg-info/
+dist/
+build/
+.pytest_cache/
+
+# Environment
+.env
+.env.local
+.env.production
+
+# Node / React
+node_modules/
+frontend/dist/
+frontend/.env.local
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# ML / Model artifacts (keep only final model)
+*.h5
+backend/ai_model/training/__pycache__/
+backend/ai_model/dataset/
+
+# Uploads (runtime directory)
+backend/uploads/
+
+# Logs
+*.log

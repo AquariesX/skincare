@@ -1,0 +1,10 @@
+{
+  "labels": [
+    "acne",
+    "dark_spots",
+    "normal_skin",
+    "puffy_eyes",
+    "wrinkles"
+  ],
+  "input_size": 224
+}
