@@ -1,4 +1,4 @@
-import { useState, useRef, useCallback } from 'react'
+import { useState, useRef, useCallback, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import LoadingSpinner from '../components/LoadingSpinner'
 import { predictSkin } from '../services/api'
@@ -12,11 +12,34 @@ export default function Analyze() {
   const [error, setError] = useState('')
   const [cameraActive, setCameraActive] = useState(false)
   const [captured, setCaptured] = useState(false)
+  const [cameraError, setCameraError] = useState('')
 
   const videoRef = useRef(null)
   const canvasRef = useRef(null)
   const streamRef = useRef(null)
   const fileInputRef = useRef(null)
+
+  // ── Attach camera stream after video element is rendered ──────
+  // The video element only exists in the DOM when cameraActive=true.
+  // We must wait for React to re-render before setting srcObject.
+  useEffect(() => {
+    if (cameraActive && videoRef.current && streamRef.current) {
+      const video = videoRef.current
+      video.srcObject = streamRef.current
+      video.play().catch((err) => {
+        console.warn('Video play error:', err)
+      })
+    }
+  }, [cameraActive])
+
+  // ── Cleanup stream on unmount ─────────────────────────────────
+  useEffect(() => {
+    return () => {
+      if (streamRef.current) {
+        streamRef.current.getTracks().forEach((t) => t.stop())
+      }
+    }
+  }, [])
 
   // ── File upload ───────────────────────────────────────────────
   const handleFileChange = (e) => {
@@ -46,21 +69,39 @@ export default function Analyze() {
   // ── Camera ────────────────────────────────────────────────────
   const startCamera = useCallback(async () => {
     setError('')
+    setCameraError('')
     try {
+      if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+        setCameraError('Your browser does not support camera access. Please use Chrome or Firefox.')
+        return
+      }
       const stream = await navigator.mediaDevices.getUserMedia({
-        video: { facingMode: 'user', width: 640, height: 480 }
+        video: {
+          facingMode: 'user',
+          width: { ideal: 640 },
+          height: { ideal: 480 },
+        },
+        audio: false,
       })
       streamRef.current = stream
-      if (videoRef.current) {
-        videoRef.current.srcObject = stream
-        videoRef.current.play()
-      }
+      // Set cameraActive AFTER storing stream — useEffect attaches srcObject
       setCameraActive(true)
       setCaptured(false)
       setFile(null)
       setPreview(null)
-    } catch {
-      setError('Camera access denied. Please allow camera permission and try again.')
+    } catch (err) {
+      console.error('Camera error:', err.name, err.message)
+      if (err.name === 'NotAllowedError' || err.name === 'PermissionDeniedError') {
+        setCameraError(
+          'Camera permission denied. Please click the camera icon in your browser address bar and allow access, then try again.'
+        )
+      } else if (err.name === 'NotFoundError' || err.name === 'DevicesNotFoundError') {
+        setCameraError('No camera found on this device.')
+      } else if (err.name === 'NotReadableError') {
+        setCameraError('Camera is already in use by another application. Please close it and try again.')
+      } else {
+        setCameraError(`Camera error: ${err.message || 'Unknown error'}`)
+      }
     }
   }, [])
 
@@ -69,6 +110,9 @@ export default function Analyze() {
       streamRef.current.getTracks().forEach((t) => t.stop())
       streamRef.current = null
     }
+    if (videoRef.current) {
+      videoRef.current.srcObject = null
+    }
     setCameraActive(false)
   }, [])
 
@@ -76,12 +120,17 @@ export default function Analyze() {
     const video = videoRef.current
     const canvas = canvasRef.current
     if (!video || !canvas) return
+    if (video.videoWidth === 0 || video.videoHeight === 0) {
+      setError('Camera is not ready yet. Wait a moment and try again.')
+      return
+    }
 
-    canvas.width = video.videoWidth || 640
-    canvas.height = video.videoHeight || 480
+    canvas.width = video.videoWidth
+    canvas.height = video.videoHeight
     canvas.getContext('2d').drawImage(video, 0, 0)
 
     canvas.toBlob((blob) => {
+      if (!blob) { setError('Failed to capture photo. Please try again.'); return }
       const capturedFile = new File([blob], 'camera-capture.jpg', { type: 'image/jpeg' })
       setFile(capturedFile)
       setPreview(canvas.toDataURL('image/jpeg'))
@@ -94,6 +143,7 @@ export default function Analyze() {
     setFile(null)
     setPreview(null)
     setCaptured(false)
+    setCameraError('')
     startCamera()
   }
 
@@ -104,6 +154,7 @@ export default function Analyze() {
     setPreview(null)
     setCaptured(false)
     setError('')
+    setCameraError('')
   }
 
   // ── Analyze ───────────────────────────────────────────────────
@@ -116,7 +167,8 @@ export default function Analyze() {
       if (cameraActive) stopCamera()
       navigate('/results', { state: { result: data } })
     } catch (err) {
-      setError(err.response?.data?.error || 'Analysis failed. Please try again.')
+      const msg = err.response?.data?.error || 'Analysis failed. Please try again.'
+      setError(msg)
     } finally {
       setLoading(false)
     }
@@ -207,15 +259,32 @@ export default function Analyze() {
               <div className="camera-zone__start">
                 <div className="camera-icon">📷</div>
                 <p>Click below to open your camera</p>
-                <button className="btn btn-primary" onClick={startCamera}>
-                  Open Camera
-                </button>
+                {cameraError ? (
+                  <div className="camera-error-box">
+                    <span className="camera-error-icon">⚠️</span>
+                    <p>{cameraError}</p>
+                    <button className="btn btn-primary" style={{ marginTop: '1rem' }} onClick={startCamera}>
+                      Try Again
+                    </button>
+                  </div>
+                ) : (
+                  <button className="btn btn-primary" onClick={startCamera}>
+                    Open Camera
+                  </button>
+                )}
               </div>
             )}
 
+            {/* Video element — always rendered when cameraActive, srcObject set by useEffect */}
             {cameraActive && (
               <div className="camera-zone__live">
-                <video ref={videoRef} className="camera-video" autoPlay playsInline muted />
+                <video
+                  ref={videoRef}
+                  className="camera-video"
+                  autoPlay
+                  playsInline
+                  muted
+                />
                 <div className="camera-controls">
                   <button className="btn btn-primary" onClick={capturePhoto}>
                     📸 Capture Photo
@@ -234,7 +303,7 @@ export default function Analyze() {
                   <button className="btn btn-ghost btn-sm" onClick={retake}>
                     🔄 Retake
                   </button>
-                  <span className="capture-label">Photo captured ✓</span>
+                  <span className="capture-label">✓ Photo captured</span>
                 </div>
               </div>
             )}

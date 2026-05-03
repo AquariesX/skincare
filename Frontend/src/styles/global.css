@@ -396,6 +396,13 @@ select.form-input { appearance: none; cursor: pointer; }
 .camera-controls { display: flex; align-items: center; justify-content: center; gap: 1rem; padding: 1rem; background: rgba(0,0,0,0.6); }
 .camera-zone__captured { width: 100%; }
 .capture-label { color: rgba(255,255,255,0.8); font-size: 0.85rem; font-weight: 500; }
+.camera-error-box {
+  background: rgba(239,68,68,0.15); border: 1px solid rgba(239,68,68,0.4);
+  border-radius: var(--radius-lg); padding: 1.25rem 1.5rem; max-width: 400px; margin: 0 auto;
+  text-align: left;
+}
+.camera-error-box p { color: rgba(255,200,200,0.95); font-size: 0.88rem; line-height: 1.6; margin: 0; }
+.camera-error-icon { font-size: 1.1rem; margin-right: 0.4rem; }
 
 .analyze-submit { margin-top: 0.5rem; }
 .analyze-privacy { text-align: center; font-size: 0.82rem; color: var(--text-light); margin-top: 1rem; }

@@ -6,6 +6,37 @@ import { getProduct, getSkinTypes, adminCreateProduct, adminUpdateProduct } from
 const PRODUCT_TYPES = ['Serum', 'Ointment', 'Cleanser', 'Moisturizer', 'Sunscreen',
   'Medicine', 'Toner', 'Eye Care', 'Mask', 'Exfoliant', 'Spot Treatment', 'Other']
 
+// Defined OUTSIDE the page component so React never remounts it on re-render
+function FieldInput({ label, name, value, onChange, placeholder, type = 'text' }) {
+  return (
+    <div className="form-group">
+      <label className="form-label">{label}</label>
+      <input
+        type={type}
+        className="form-input"
+        placeholder={placeholder}
+        value={value}
+        onChange={(e) => onChange(name, e.target.value)}
+      />
+    </div>
+  )
+}
+
+function FieldTextarea({ label, name, value, onChange, placeholder }) {
+  return (
+    <div className="form-group">
+      <label className="form-label">{label}</label>
+      <textarea
+        className="form-input"
+        rows="4"
+        placeholder={placeholder}
+        value={value}
+        onChange={(e) => onChange(name, e.target.value)}
+      />
+    </div>
+  )
+}
+
 export default function AddEditProduct() {
   const { id } = useParams()
   const navigate = useNavigate()
@@ -26,14 +57,22 @@ export default function AddEditProduct() {
       getProduct(id).then(({ data }) => {
         const p = data.product
         setForm({
-          name: p.name, skin_type_id: p.skin_type_id || '',
-          category: p.category || '', product_type: p.product_type || '',
-          description: p.description || '', usage_instruction: p.usage_instruction || '',
+          name: p.name || '',
+          skin_type_id: p.skin_type_id || '',
+          category: p.category || '',
+          product_type: p.product_type || '',
+          description: p.description || '',
+          usage_instruction: p.usage_instruction || '',
           ingredients: p.ingredients || '',
         })
       }).catch(() => setError('Failed to load product.'))
     }
   }, [id, isEdit])
+
+  // Single updater function — no re-definition on every render
+  const handleChange = (name, value) => {
+    setForm((prev) => ({ ...prev, [name]: value }))
+  }
 
   const handleSubmit = async (e) => {
     e.preventDefault()
@@ -58,19 +97,6 @@ export default function AddEditProduct() {
     }
   }
 
-  const F = ({ label, name, type = 'text', placeholder, as }) => (
-    <div className="form-group">
-      <label className="form-label">{label}</label>
-      {as === 'textarea' ? (
-        <textarea className="form-input" rows="4" placeholder={placeholder}
-          value={form[name]} onChange={(e) => setForm({ ...form, [name]: e.target.value })} />
-      ) : (
-        <input type={type} className="form-input" placeholder={placeholder}
-          value={form[name]} onChange={(e) => setForm({ ...form, [name]: e.target.value })} />
-      )}
-    </div>
-  )
-
   return (
     <AdminLayout>
       <div className="admin-page">
@@ -79,11 +105,20 @@ export default function AddEditProduct() {
 
         <form onSubmit={handleSubmit} className="admin-form">
           <div className="form-row">
-            <F label="Product Name *" name="name" placeholder="e.g. Vitamin C Serum" />
+            <FieldInput
+              label="Product Name *"
+              name="name"
+              value={form.name}
+              onChange={handleChange}
+              placeholder="e.g. Vitamin C Serum"
+            />
             <div className="form-group">
               <label className="form-label">Skin Condition</label>
-              <select className="form-input" value={form.skin_type_id}
-                onChange={(e) => setForm({ ...form, skin_type_id: e.target.value })}>
+              <select
+                className="form-input"
+                value={form.skin_type_id}
+                onChange={(e) => handleChange('skin_type_id', e.target.value)}
+              >
                 <option value="">-- Select --</option>
                 {skinTypes.map((st) => (
                   <option key={st.id} value={st.id}>{st.name}</option>
@@ -95,23 +130,54 @@ export default function AddEditProduct() {
           <div className="form-row">
             <div className="form-group">
               <label className="form-label">Product Type</label>
-              <select className="form-input" value={form.product_type}
-                onChange={(e) => setForm({ ...form, product_type: e.target.value })}>
+              <select
+                className="form-input"
+                value={form.product_type}
+                onChange={(e) => handleChange('product_type', e.target.value)}
+              >
                 <option value="">-- Select --</option>
                 {PRODUCT_TYPES.map((t) => <option key={t} value={t}>{t}</option>)}
               </select>
             </div>
-            <F label="Category" name="category" placeholder="e.g. Anti-aging" />
+            <FieldInput
+              label="Category"
+              name="category"
+              value={form.category}
+              onChange={handleChange}
+              placeholder="e.g. Anti-aging"
+            />
           </div>
 
-          <F label="Description" name="description" placeholder="Brief product description" as="textarea" />
-          <F label="Key Ingredients" name="ingredients" placeholder="e.g. Niacinamide, Retinol, Vitamin C" as="textarea" />
-          <F label="Usage Instructions" name="usage_instruction" placeholder="How to apply this product" as="textarea" />
+          <FieldTextarea
+            label="Description"
+            name="description"
+            value={form.description}
+            onChange={handleChange}
+            placeholder="Brief product description"
+          />
+          <FieldTextarea
+            label="Key Ingredients"
+            name="ingredients"
+            value={form.ingredients}
+            onChange={handleChange}
+            placeholder="e.g. Niacinamide, Retinol, Vitamin C"
+          />
+          <FieldTextarea
+            label="Usage Instructions"
+            name="usage_instruction"
+            value={form.usage_instruction}
+            onChange={handleChange}
+            placeholder="How to apply this product"
+          />
 
           <div className="form-group">
             <label className="form-label">Product Image</label>
-            <input type="file" className="form-input" accept="image/*"
-              onChange={(e) => setImageFile(e.target.files?.[0] || null)} />
+            <input
+              type="file"
+              className="form-input"
+              accept="image/*"
+              onChange={(e) => setImageFile(e.target.files?.[0] || null)}
+            />
           </div>
 
           <div className="form-actions">

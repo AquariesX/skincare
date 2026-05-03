@@ -3,7 +3,7 @@ import uuid
 from flask import Blueprint, request, jsonify, current_app
 from flask_jwt_extended import jwt_required, get_jwt_identity, verify_jwt_in_request
 from werkzeug.utils import secure_filename
-from ..utils.validators import is_valid_image
+from ..utils.validators import is_valid_image, check_image_quality
 from ..services.model_service import predict_skin_condition
 from ..services.recommendation_service import get_recommendation_for_condition
 from ..extensions import db
@@ -53,6 +53,15 @@ def predict():
     filename = f"{uuid.uuid4().hex}_{secure_filename(file.filename)}"
     save_path = os.path.join(current_app.config['UPLOAD_FOLDER'], filename)
     file.save(save_path)
+
+    # Image quality check — reject blank, too dark, too bright, or graphic images
+    quality_ok, quality_error = check_image_quality(save_path)
+    if not quality_ok:
+        try:
+            os.remove(save_path)
+        except Exception:
+            pass
+        return jsonify({'error': quality_error}), 400
 
     try:
         result = predict_skin_condition(save_path)
