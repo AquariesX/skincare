@@ -16,12 +16,12 @@ LOW_CONFIDENCE_THRESHOLD = 40.0
 
 def _log(user_id, action, details=None):
     try:
-        log = UserLog(
-            user_id=user_id,
-            action=action,
-            details=details,
-            ip_address=request.remote_addr
-        )
+        log = UserLog()  # type: ignore[call-arg]
+        UserLog.user_id=user_id,
+        UserLog.action=action,
+        UserLog.details=details,
+        UserLog.ip_address=request.remote_addr
+    
         db.session.add(log)
         db.session.commit()
     except Exception:
@@ -50,7 +50,7 @@ def predict():
     if not is_valid_image(file, current_app.config['ALLOWED_EXTENSIONS']):
         return jsonify({'error': 'Invalid file. Please upload a JPG, PNG, or WEBP image.'}), 400
 
-    filename = f"{uuid.uuid4().hex}_{secure_filename(file.filename)}"
+    filename = f"{uuid.uuid4().hex}_{secure_filename(file.filename or '')}"
     save_path = os.path.join(current_app.config['UPLOAD_FOLDER'], filename)
     file.save(save_path)
 
@@ -85,14 +85,14 @@ def predict():
         # Save record to MySQL
         analysis_id = None
         try:
-            record = SkinAnalysis(
-                user_id=current_user_id,
-                image_path=filename,
-                predicted_condition=result['condition'],
-                confidence_score=result['confidence'],
-                skin_type_id=skin_type_obj.id if skin_type_obj else None,
-                recommendation_id=rec_obj.id if rec_obj else None,
-            )
+            record = SkinAnalysis()  # type: ignore[call-arg]
+            SkinAnalysis.user_id=current_user_id,
+            SkinAnalysis.image_path=filename,
+            SkinAnalysis.predicted_condition=result['condition'],
+            SkinAnalysis.confidence_score=result['confidence'],
+            SkinAnalysis.skin_type_id=skin_type_obj.id if skin_type_obj else None,
+            SkinAnalysis.recommendation_id=rec_obj.id if rec_obj else None,
+            
             db.session.add(record)
             db.session.commit()
             analysis_id = record.id

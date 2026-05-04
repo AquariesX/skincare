@@ -35,25 +35,20 @@ def _load_model():
 
 
 def _preprocess(image_path):
-    """
-    Preprocess image to match the model's exact input shape.
-    Uses PIL — works on every platform, no TF version issues.
-    """
-    # Choose PIL colour mode to match what the model expects
+    from tensorflow.keras.applications.efficientnet import preprocess_input  # type: ignore
     pil_mode = 'RGB' if _input_c == 3 else 'L'
 
-    img = Image.open(image_path).convert(pil_mode)   # force correct channels
-    img = img.resize((_input_w, _input_h))            # PIL resize: (width, height)
+    img = Image.open(image_path).convert(pil_mode)
+    img = img.resize((_input_w, _input_h))
 
-    img_array = np.array(img, dtype='float32') / 255.0
+    # Keep pixel values as 0-255 — preprocess_input scales to [-1, 1] for EfficientNet
+    img_array = np.array(img, dtype='float32')
 
-    # Shape after np.array:
-    #   RGB → (H, W, 3)
-    #   L   → (H, W)   — needs an explicit channel axis
     if _input_c == 1 and img_array.ndim == 2:
-        img_array = np.expand_dims(img_array, axis=-1)  # (H, W, 1)
+        img_array = np.expand_dims(img_array, axis=-1)
 
-    img_array = np.expand_dims(img_array, axis=0)       # (1, H, W, C)
+    img_array = np.expand_dims(img_array, axis=0)    # (1, H, W, C)
+    img_array = preprocess_input(img_array)           # [-1, 1] to match training
 
     print(f"[Preprocess] Image shape before prediction: {img_array.shape}")
     return img_array
@@ -66,7 +61,7 @@ def predict_skin_condition(image_path):
 
     img_array = _preprocess(image_path)
 
-    predictions = _model.predict(img_array, verbose=0)
+    predictions = _model.predict(img_array, verbose=0)  # type: ignore[union-attr]
     class_idx  = int(np.argmax(predictions[0]))
     confidence = float(predictions[0][class_idx]) * 100
 

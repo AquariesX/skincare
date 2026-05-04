@@ -15,7 +15,10 @@
       "Bash(Select-Object -First 50)",
       "Bash(Format-Table FullName)",
       "Bash(xargs ls *)",
-      "Bash(Select-Object FullName)"
+      "Bash(Select-Object FullName)",
+      "Bash(Get-ChildItem \"D:\\\\Fyp Skin Care\\\\backend\\\\ai_model\\\\dataset\" -Directory)",
+      "Bash(Select-Object Name)",
+      "Read(//d/Fyp Skin Care/backend/ai_model/training/**)"
     ]
   }
 }

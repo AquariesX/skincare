@@ -36,17 +36,17 @@ def create_recommendation():
     if not SkinType.query.get(skin_type_id):
         return jsonify({'error': 'Skin type not found.'}), 404
 
-    rec = Recommendation(
-        skin_type_id=skin_type_id,
-        description=data.get('description', ''),
-        skincare_routine=data.get('skincare_routine', ''),
-        medicines=data.get('medicines', ''),
-        ointments=data.get('ointments', ''),
-        serums=data.get('serums', ''),
-        home_remedies=data.get('home_remedies', ''),
-        precautions=data.get('precautions', ''),
-        dermatologist_advice=data.get('dermatologist_advice', ''),
-    )
+    rec = Recommendation()
+    Recommendation.skin_type_id=skin_type_id,
+    Recommendation.description=data.get('description', ''),
+    Recommendation.skincare_routine=data.get('skincare_routine', ''),
+    Recommendation.medicines=data.get('medicines', ''),
+    Recommendation.ointments=data.get('ointments', ''),
+    Recommendation.serums=data.get('serums', ''),
+    Recommendation.home_remedies=data.get('home_remedies', ''),
+    Recommendation.precautions=data.get('precautions', ''),
+    Recommendation.dermatologist_advice=data.get('dermatologist_advice', ''),
+
     db.session.add(rec)
     db.session.commit()
     return jsonify({'recommendation': rec.to_dict()}), 201

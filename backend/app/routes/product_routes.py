@@ -75,16 +75,16 @@ def create_product():
                 img.save(save_path)
                 image_path = fname
 
-        product = Product(
-            name=name,
-            skin_type_id=request.form.get('skin_type_id', type=int),
-            category=request.form.get('category', ''),
-            product_type=request.form.get('product_type', ''),
-            description=request.form.get('description', ''),
-            usage_instruction=request.form.get('usage_instruction', ''),
-            ingredients=request.form.get('ingredients', ''),
-            image_path=image_path
-        )
+        product = Product()  # type: ignore[call-arg]
+        Product.name=name,
+        Product.skin_type_id=request.form.get('skin_type_id', type=int),
+        Product.category=request.form.get('category', ''),
+        Product.product_type=request.form.get('product_type', ''),
+        Product.description=request.form.get('description', ''),
+        Product.usage_instruction=request.form.get('usage_instruction', ''),
+        Product.ingredients=request.form.get('ingredients', ''),
+        Product.image_path=image_path
+        
 
         db.session.add(product)
         db.session.commit()
@@ -128,7 +128,7 @@ def update_product(product_id):
 
     if 'image' in request.files:
         img = request.files['image']
-        if img and _allowed(img.filename):
+        if img and img.filename and _allowed(img.filename):
             fname = f"{uuid.uuid4().hex}_{secure_filename(img.filename)}"
             img.save(os.path.join(current_app.config['UPLOAD_FOLDER'], fname))
             product.image_path = fname

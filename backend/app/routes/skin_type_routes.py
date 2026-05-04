@@ -36,7 +36,9 @@ def create_skin_type():
     if SkinType.query.filter_by(name=name).first():
         return jsonify({'error': 'Skin type already exists.'}), 409
 
-    st = SkinType(name=name, description=data.get('description', ''))
+    st = SkinType()
+    st.name=name, 
+    st.description=data.get('description', '')
     db.session.add(st)
     db.session.commit()
     return jsonify({'skin_type': st.to_dict()}), 201

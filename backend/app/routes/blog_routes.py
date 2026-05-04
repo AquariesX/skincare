@@ -76,18 +76,18 @@ def create_blog():
     image_path = None
     if 'image' in request.files:
         img = request.files['image']
-        if img and _allowed(img.filename):
+        if img and img.filename and _allowed(img.filename):
             fname = f"{uuid.uuid4().hex}_{secure_filename(img.filename)}"
             img.save(os.path.join(current_app.config['UPLOAD_FOLDER'], fname))
             image_path = fname
 
-    blog = Blog(
-        title=title,
-        slug=_unique_slug(title),
-        content=content,
-        image_path=image_path,
-        author_id=user_id,
-    )
+    blog = Blog() # type: ignore[call-arg]
+    blog.title=title,
+    blog.slug=_unique_slug(title),
+    blog.content=content,
+    blog.image_path=image_path,
+    blog.author_id=user_id,
+    
     db.session.add(blog)
     db.session.commit()
     return jsonify({'blog': blog.to_dict()}), 201
@@ -119,7 +119,7 @@ def update_blog(blog_id):
 
     if 'image' in request.files:
         img = request.files['image']
-        if img and _allowed(img.filename):
+        if img and img.filename and _allowed(img.filename):
             fname = f"{uuid.uuid4().hex}_{secure_filename(img.filename)}"
             img.save(os.path.join(current_app.config['UPLOAD_FOLDER'], fname))
             blog.image_path = fname

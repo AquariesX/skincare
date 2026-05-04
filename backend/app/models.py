@@ -84,7 +84,7 @@ class Recommendation(db.Model):
         return {
             'id': self.id,
             'skin_type_id': self.skin_type_id,
-            'skin_type_name': self.skin_type.name if self.skin_type else None,
+            'skin_type_name': self.skin_type.name if self.skin_type else None,  # type: ignore[attr-defined]
             'description': self.description,
             'skincare_routine': self.skincare_routine,
             'medicines': self.medicines,
@@ -143,7 +143,7 @@ class Product(db.Model):
         return {
             'id': self.id,
             'skin_type_id': self.skin_type_id,
-            'skin_type_name': self.skin_type.name if self.skin_type else None,
+            'skin_type_name': self.skin_type.name if self.skin_type else None,  # type: ignore[attr-defined]
             'name': self.name,
             'category': self.category,
             'product_type': self.product_type,
@@ -175,7 +175,7 @@ class Blog(db.Model):
             'slug': self.slug,
             'image_path': self.image_path,
             'author_id': self.author_id,
-            'author_name': self.author.username if self.author else 'Admin',
+            'author_name': self.author.username if self.author else 'Admin',  # type: ignore[attr-defined]
             'created_at': self.created_at.isoformat() if self.created_at else None,
             'updated_at': self.updated_at.isoformat() if self.updated_at else None,
         }
@@ -200,9 +200,28 @@ class UserLog(db.Model):
         return {
             'id': self.id,
             'user_id': self.user_id,
-            'user_name': self.user.username if self.user else 'Guest',
+            'user_name': self.user.username if self.user else 'Guest',  # type: ignore[attr-defined]
             'action': self.action,
             'details': self.details,
             'ip_address': self.ip_address,
             'created_at': self.created_at.isoformat() if self.created_at else None,
+        }
+class QuizQuestion(db.Model):
+    __tablename__ = "quiz_questions"
+
+    id = db.Column(db.Integer, primary_key=True)
+    question = db.Column(db.String(255), nullable=False)
+    option_a = db.Column(db.String(255), nullable=False)
+    option_b = db.Column(db.String(255), nullable=False)
+    option_c = db.Column(db.String(255), nullable=False)
+    order = db.Column(db.Integer, default=0)
+
+    def to_dict(self):
+        return {
+            "id": self.id,
+            "question": self.question,
+            "option_a": self.option_a,
+            "option_b": self.option_b,
+            "option_c": self.option_c,
+            "order": self.order,
         }

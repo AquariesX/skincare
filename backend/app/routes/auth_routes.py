@@ -8,12 +8,12 @@ auth_bp = Blueprint('auth', __name__)
 
 def _log(user_id, action, details=None):
     try:
-        log = UserLog(
-            user_id=user_id,
-            action=action,
-            details=details,
-            ip_address=request.remote_addr
-        )
+        log = UserLog() # type: ignore[call-arg]
+        UserLog.user_id=user_id,
+        UserLog.action=action,
+        UserLog.details=details,
+        UserLog.ip_address=request.remote_addr
+        
         db.session.add(log)
         db.session.commit()
     except Exception:
@@ -43,7 +43,7 @@ def register():
         if User.query.filter_by(email=email).first():
             return jsonify({'error': 'Email is already registered.'}), 409
 
-        user = User(username=username, email=email, role='user')
+        user = User(username=username, email=email, role='user')  # type: ignore[call-arg]
         user.set_password(password)
         db.session.add(user)
         db.session.commit()

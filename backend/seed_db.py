@@ -91,7 +91,10 @@ def seed():
     with app.app_context():
         # Admin user
         if not User.query.filter_by(email='admin@gmail.com').first():
-            admin = User(username='Admin', email='admin@gmail.com', role='admin')
+            admin = User()
+            admin.username='Admin', 
+            admin.email='admin@gmail.com', 
+            admin.role='admin'
             admin.set_password('admin123')
             db.session.add(admin)
             db.session.commit()
@@ -104,7 +107,9 @@ def seed():
         for item in SKIN_DATA:
             st = SkinType.query.filter_by(name=item['name']).first()
             if not st:
-                st = SkinType(name=item['name'], description=item['description'])
+                st = SkinType()
+                st.name=item['name'], 
+                st.description=item['description']
                 db.session.add(st)
                 db.session.commit()
                 print(f'[Seed] SkinType created: {item["name"]}')
@@ -113,7 +118,8 @@ def seed():
 
             rec = Recommendation.query.filter_by(skin_type_id=st.id).first()
             if not rec:
-                rec = Recommendation(skin_type_id=st.id, **item['rec'])
+                rec = Recommendation()
+                rec.skin_type_id=st.id, item['rec']
                 db.session.add(rec)
                 db.session.commit()
                 print(f'[Seed] Recommendation created for: {item["name"]}')
